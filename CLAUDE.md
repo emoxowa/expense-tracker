@@ -159,6 +159,35 @@ backend DTO rules (email, password ≥ 8 chars) — keep them in sync.
   (`ForbiddenException` is deliberately unused) — ownership checks scope the
   query by `userId` so a foreign id is indistinguishable from a missing one.
 
+## Branching workflow — GitHub Flow
+
+The repository follows [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow):
+
+- **`main` is always deployable** and is never committed to directly. Every
+  change — feature, fix, refactor, docs — starts as a branch off the latest
+  `main`.
+- **Branch names** are `<type>/<short-kebab-case-description>`, where `<type>`
+  is the same set used for commit types (`feat`, `fix`, `refactor`, `perf`,
+  `docs`, `style`, `test`, `build`, `ci`, `chore`) plus `feature` as an accepted
+  alias for `feat`. Describe the change, not the ticket or the author
+  (`feature/dashboard`, `fix/expired-jwt-401`, not `evgeniia/new-stuff`).
+- **One branch — one logical change.** Keep it short-lived: branch, ship,
+  delete. Long-running branches that accumulate unrelated work are not part of
+  this flow.
+- **Commits inside a branch** follow the Conventional Commits rules below.
+- **Merging into `main` happens through a pull request**, never by a local
+  `git merge` into `main`. The branch must be up to date with `main` (rebase
+  onto it, don't merge `main` back into the branch) and `npm run lint`,
+  `npm run format:check` and `npm run build` must pass before the PR is opened.
+- **After the PR is merged**, delete the branch (remote and local) and pull
+  `main` before starting the next one.
+
+```bash
+git switch main && git pull            # start from the latest main
+git switch -c feature/dashboard        # branch for one logical change
+git push -u origin feature/dashboard   # publish, then open a PR
+```
+
 ## Commit conventions
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org):
