@@ -1,0 +1,70 @@
+// Prisma schema для трекера расходов.
+// Документация: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Строка подключения задаётся в prisma.config.ts (CLI) и через
+  // driver adapter в PrismaService (рантайм) — Prisma 7 не поддерживает
+  // `url` в блоке datasource.
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+  categories   Category[]
+
+  // Доказательство согласия (152-ФЗ): отметки времени проставляются на сервере
+  // при регистрации. Nullable — у пользователей, заведённых до этой миграции,
+  // согласия нет.
+  personalDataConsentAt   DateTime?
+  privacyPolicyAcceptedAt DateTime?
+  consentDocsVersion      String?
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  color        String?
+  icon         String?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+
+  @@unique([userId, name])
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  amount      Decimal         @db.Decimal(12, 2)
+  type        TransactionType
+  currency    String          @default("USD")
+  description String?
+  date        DateTime
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  // Основной запрос — свои транзакции за период; левый префикс покрывает и
+  // фильтр только по userId.
+  @@index([userId, date])
+  @@index([categoryId])
+}
