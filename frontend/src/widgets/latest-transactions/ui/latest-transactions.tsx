@@ -5,9 +5,10 @@ import { Loader2 } from 'lucide-react';
 import type { Category } from '@/entities/category';
 import { getCategories } from '@/entities/category';
 import { getAccessToken } from '@/entities/session';
-import type { Transaction } from '@/entities/transaction';
+import type { Transaction, TransactionsSummary } from '@/entities/transaction';
 import { getTransactions, TransactionItem } from '@/entities/transaction';
 import { ApiError } from '@/shared/api';
+import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import {
   Card,
@@ -26,10 +27,17 @@ import {
 
 const PAGE_SIZE = 10;
 
+// Сводка приходит без валюты (бэкенд суммирует amount по всем записям),
+// поэтому форматируем как обычное число, без символа валюты.
+const amountFormatter = new Intl.NumberFormat('ru-RU', {
+  maximumFractionDigits: 2,
+});
+
 export function LatestTransactions() {
   const [page, setPage] = useState(0);
   const [items, setItems] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
+  const [summary, setSummary] = useState<TransactionsSummary | null>(null);
   const [categories, setCategories] = useState<Map<string, Category>>(
     new Map(),
   );
@@ -69,6 +77,7 @@ export function LatestTransactions() {
         if (cancelled) return;
         setItems(response.items);
         setTotal(response.total);
+        setSummary(response.summary);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -102,6 +111,33 @@ export function LatestTransactions() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        {summary && !error && (
+          <dl className="grid grid-cols-3 gap-2 text-sm">
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Доходы</dt>
+              <dd className="font-medium text-emerald-600 tabular-nums">
+                {amountFormatter.format(summary.totalIncome)}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Расходы</dt>
+              <dd className="font-medium tabular-nums">
+                {amountFormatter.format(summary.totalExpense)}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Баланс</dt>
+              <dd
+                className={cn(
+                  'font-medium tabular-nums',
+                  summary.balance < 0 ? 'text-destructive' : 'text-foreground',
+                )}
+              >
+                {amountFormatter.format(summary.balance)}
+              </dd>
+            </div>
+          </dl>
+        )}
         {isLoading ? (
           <div className="text-muted-foreground flex items-center justify-center gap-2 py-10 text-sm">
             <Loader2 className="size-4 animate-spin" />
@@ -114,27 +150,25 @@ export function LatestTransactions() {
             Здесь появятся ваши доходы и расходы.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Категория</TableHead>
-                  <TableHead>Описание</TableHead>
-                  <TableHead className="text-right">Сумма</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((transaction) => (
-                  <TransactionItem
-                    key={transaction.id}
-                    transaction={transaction}
-                    category={categories.get(transaction.categoryId)}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Дата</TableHead>
+                <TableHead>Категория</TableHead>
+                <TableHead>Описание</TableHead>
+                <TableHead className="text-right">Сумма</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((transaction) => (
+                <TransactionItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  category={categories.get(transaction.categoryId)}
+                />
+              ))}
+            </TableBody>
+          </Table>
         )}
 
         {total > PAGE_SIZE && (

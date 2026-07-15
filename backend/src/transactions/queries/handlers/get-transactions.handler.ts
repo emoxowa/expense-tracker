@@ -29,9 +29,11 @@ export class GetTransactionsHandler implements IQueryHandler<
       this.prisma.transaction.findMany({
         where,
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
-        // take/skip добавляем только когда заданы: без них возвращаем весь список.
-        ...(filter.limit !== undefined ? { take: filter.limit } : {}),
-        ...(filter.offset !== undefined ? { skip: filter.offset } : {}),
+        // Пагинация — единый блок: offset осмыслен только вместе с limit.
+        // Без limit возвращаем весь список (offset в одиночку игнорируем).
+        ...(filter.limit !== undefined
+          ? { take: filter.limit, skip: filter.offset ?? 0 }
+          : {}),
       }),
       this.prisma.transaction.groupBy({
         by: ['type'],

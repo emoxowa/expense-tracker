@@ -2,7 +2,6 @@ export {
   clearSession,
   getAccessToken,
   getSession,
-  logout,
   saveSession,
   type Session,
 } from './model/session';

@@ -39,8 +39,3 @@ export function clearSession(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 }
-
-/** Завершает сессию. Редирект оставляем вызывающему коду. */
-export function logout(): void {
-  clearSession();
-}

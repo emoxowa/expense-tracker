@@ -3,5 +3,6 @@ export { TransactionItem } from './ui/transaction-item';
 export type {
   Transaction,
   TransactionsResponse,
+  TransactionsSummary,
   TransactionType,
 } from './model/types';

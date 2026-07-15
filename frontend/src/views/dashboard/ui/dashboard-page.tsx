@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { logout, useSession } from '@/entities/session';
+import { clearSession, useSession } from '@/entities/session';
 import { Button } from '@/shared/ui/button';
 import { LatestTransactions } from '@/widgets/latest-transactions';
 
@@ -19,7 +18,7 @@ export function DashboardPage() {
   }, [isLoading, session, router]);
 
   function handleLogout() {
-    logout();
+    clearSession();
     router.replace('/login');
   }
 
@@ -45,15 +44,6 @@ export function DashboardPage() {
           Выйти
         </Button>
       </header>
-
-      <nav className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link href="/transactions">Транзакции</Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/categories">Категории</Link>
-        </Button>
-      </nav>
 
       <LatestTransactions />
     </main>

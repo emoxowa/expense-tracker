@@ -93,7 +93,10 @@ app/        Next.js App Router — routing, root layout, globals.css. Route
             component from views/.
 views/      FSD "pages" layer, renamed because src/pages is reserved by
             Next.js (Pages Router). One slice per screen (views/login,
-            views/register), page composition only.
+            views/register, views/dashboard), page composition only.
+widgets/    Self-contained composite blocks that a view drops onto a page
+            (widgets/latest-transactions — paginated table that fetches its
+            own data and composes entities). Sits between views and features.
 features/   User interactions (features/auth — login/registration forms,
             auth API requests, zod schemas).
 entities/   Domain models (entities/session — JWT + user persistence in
