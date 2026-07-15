@@ -48,7 +48,7 @@ export function RegisterForm() {
         name: values.name?.trim() || undefined,
       });
       saveSession(session);
-      router.replace('/');
+      router.replace('/dashboard');
     } catch (error) {
       setServerError(
         error instanceof Error

@@ -59,6 +59,10 @@ export interface TransactionsQueryDto {
   year?: number;
   type?: TransactionType;
   categoryId?: string;
+  /** Размер страницы. Без него возвращаются все подходящие транзакции. */
+  limit?: number;
+  /** Смещение для пагинации. Считается вместе с limit. */
+  offset?: number;
 }
 
 /** Сводка считается по тем же фильтрам, что и список. */
@@ -71,6 +75,8 @@ export interface TransactionsSummary {
 export interface TransactionsResponse {
   items: Transaction[];
   summary: TransactionsSummary;
+  /** Всего транзакций по фильтру (без учёта limit/offset) — для пагинации. */
+  total: number;
 }
 
 /** Публичное представление пользователя — без хэша пароля. */

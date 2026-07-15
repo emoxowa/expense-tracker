@@ -25,16 +25,21 @@ export class GetTransactionsHandler implements IQueryHandler<
       ...(date ? { date } : {}),
     };
 
-    const [transactions, grouped] = await Promise.all([
+    const [transactions, grouped, total] = await Promise.all([
       this.prisma.transaction.findMany({
         where,
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+        // take/skip добавляем только когда заданы: без них возвращаем весь список.
+        ...(filter.limit !== undefined ? { take: filter.limit } : {}),
+        ...(filter.offset !== undefined ? { skip: filter.offset } : {}),
       }),
       this.prisma.transaction.groupBy({
         by: ['type'],
         where,
         _sum: { amount: true },
       }),
+      // total — по тому же where, без limit/offset, для расчёта числа страниц.
+      this.prisma.transaction.count({ where }),
     ]);
 
     const sumOf = (type: $Enums.TransactionType): Prisma.Decimal =>
@@ -52,6 +57,7 @@ export class GetTransactionsHandler implements IQueryHandler<
         // Вычитаем в Decimal, а не во float.
         balance: totalIncome.minus(totalExpense).toNumber(),
       },
+      total,
     };
   }
 }

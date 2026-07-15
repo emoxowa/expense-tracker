@@ -29,7 +29,7 @@ export function LoginForm() {
     try {
       const session = await login(values);
       saveSession(session);
-      router.replace('/');
+      router.replace('/dashboard');
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : 'Не удалось войти',
