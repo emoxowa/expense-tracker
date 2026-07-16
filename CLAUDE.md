@@ -225,3 +225,62 @@ fix(auth): reject expired JWT with 401 instead of 500
 refactor(categories): move ownership check behind the CQRS bus
 chore(deps): pin radix-ui to 1.4.3
 ```
+
+## Pull Request
+
+How to open a PR for the current branch.
+
+**Preconditions** (check before doing anything):
+
+- You are on a feature branch, not `main`. If you are on `main`, the branch
+  was committed to by mistake — stop and sort that out first (a PR is opened
+  *from* a feature branch, never from `main`).
+- The branch is ahead of `main` — there are commits and a real diff. If
+  `git diff main...HEAD` is empty there is nothing to open a PR with.
+- `npm run lint`, `npm run format:check` and `npm run build` all pass.
+- The branch is rebased onto the latest `main` (rebase onto it — never merge
+  `main` back into the branch).
+
+**Steps:**
+
+1. **Analyse the changes** to write an informative description:
+
+   ```bash
+   git diff main...HEAD
+   git log --oneline main..HEAD
+   ```
+
+2. **Publish the branch:**
+
+   ```bash
+   git push -u origin <branch>
+   ```
+
+   (There is no `gh pr push` — publishing is a plain `git push`.)
+
+3. **Open the PR**, passing the base explicitly (the GitHub default branch is
+   not guaranteed to be `main`). Pass the body via `--body-file` or a heredoc
+   so its markdown is preserved:
+
+   ```bash
+   gh pr create --base main --head <branch> \
+     --title "<conventional-commit title>" \
+     --body-file <path>
+   ```
+
+**What a good PR contains:**
+
+- **Title** — Conventional Commits, same rules as commit subjects:
+  `<type>(<scope>): <subject>` (e.g. `feat(frontend): add dashboard main
+  screen`).
+- **## Summary** — one short paragraph on *what* was implemented and *why*.
+- **## Backend** — new endpoints (method + path), Prisma model/field changes,
+  migrations, CQRS commands/queries.
+- **## Frontend** — new components/widgets/features (by FSD layer), hooks,
+  pages.
+- **## Test plan** — manual verification steps (there are no automated tests
+  yet). For example: `docker compose up -d`, `npm run dev`, walk the scenario
+  in the UI or hit the endpoints with `curl`.
+
+Leave out sections that do not apply to the change (a backend-only PR has no
+`## Frontend` section).
